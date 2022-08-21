@@ -45,10 +45,10 @@ print("N:", N, "M:", M)
 # initialize variables
 K = 10 # latent dimensionality
 W = np.random.randn(N, K)
-b = np.zeros(N)
-U = np.random.randn(M, K)
+b = np.zeros(N)   #user
+U = np.random.randn(M, K)   #movie
 c = np.zeros(M)
-mu = np.mean(list(usermovie2rating.values()))
+mu = np.mean(list(usermovie2rating.values()))   #train ratings
 
 # prediction[i,j] = W[i].dot(U[j]) + b[i] + c.T[j] + mu
 
@@ -59,18 +59,18 @@ def get_loss(d):
   for k, r in d.items():
     i, j = k
     p = W[i].dot(U[j]) + b[i] + c[j] + mu
-    sse += (p - r)*(p - r)
-  return sse / N
+    sse += (p - r)*(p - r)    #the sum of squared errors
+  return sse / N    #이러면 평균이 더 커짐
 
 
 # train the parameters
 epochs = 25
 reg =20. # regularization penalty
 train_losses = []
-test_losses = []
+test_losses = []  #반복중 2개의 리스트를 채울 것
 for epoch in range(epochs):
   print("epoch:", epoch)
-  epoch_start = datetime.now()
+  epoch_start = datetime.now()   #시간을 측정해서 성능 비교
   # perform updates
 
   # update W and b
@@ -82,9 +82,9 @@ for epoch in range(epochs):
 
     # for b
     bi = 0
-    for j in user2movie[i]:
+    for j in user2movie[i]:   #J: 사용자가 평가한 각 영화(each movie J that user has rated)
       r = usermovie2rating[(i,j)]
-      matrix += np.outer(U[j], U[j])
+      matrix += np.outer(U[j], U[j])  #UJ의 외적
       vector += (r - b[i] - c[j] - mu)*U[j]
       bi += (r - W[i].dot(U[j]) - c[j] - mu)
 
@@ -93,7 +93,7 @@ for epoch in range(epochs):
     b[i] = bi / (len(user2movie[i]) + reg)
 
     if i % (N//10) == 0:
-      print("i:", i, "N:", N)
+      print("i:", i, "N:", N)   #10번마다 출력
   print("updated W and b:", datetime.now() - t0)
 
   # update U and c
@@ -104,7 +104,7 @@ for epoch in range(epochs):
     vector = np.zeros(K)
 
     # for c
-    cj = 0
+    cj = 0  #values for the movie Bias/ 사용자의 평가가 없을 수도 있음
     try:
       for i in movie2user[j]:
         r = usermovie2rating[(i,j)]
@@ -136,7 +136,7 @@ for epoch in range(epochs):
   print("test loss:", test_losses[-1])
 
 
-print("train losses:", train_losses)
+print("train losses:", train_losses) #the non regularized loss
 print("test losses:", test_losses)
 
 # plot losses
